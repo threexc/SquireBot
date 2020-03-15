@@ -2,6 +2,9 @@ import discord
 import random
 import json
 import os
+import statistics
+import numpy as np
+import matplotlib.pyplot as plt
 
 from discord.ext import commands
 
@@ -28,7 +31,6 @@ if not os.path.isfile(bot_config_file) or os.stat(bot_config_file).st_size == 0:
 else:
     with open(bot_config_file, 'r') as jsonfile:
         bot_config = json.load(jsonfile)
-
 
 @bot.event
 async def on_ready():
@@ -85,9 +87,34 @@ async def hoers(ctx):
         await ctx.send("You're not a hoers")
         print (ctx.message.author.nick)
 
+def roll_split(roll_string, splits=2):
+    if splits == 3:
+        parse = roll_string.split('x')
+        print(parse)
+        sets = parse[0]
+        print(sets)
+        counts_sides = parse[1]
+        print(counts_sides)
+        count = counts_sides.split('d')[0]
+        sides = counts_sides.split('d')[1]
+        return (sets, count, sides)
+    else:
+        count = roll_string.split('d')[0]
+        sides = roll_string.split('d')[1]
+        return (count, sides)
+        
+
+
+
+async def basic_roll(ctx, roll : str):
+
+    total = 0
+    rolls_str = ""
+    rolls = []
+
 
 @bot.command()
-async def roll(ctx, roll : str):
+async def rollsum(ctx, roll : str):
 
     total = 0
     rolls_str = ""
@@ -95,8 +122,7 @@ async def roll(ctx, roll : str):
 
     try:
         try:
-            count = roll.split('d')[0]
-            sides = roll.split('d')[1]
+            count, sides = roll_split(roll)
 
 
         except Exception as e:
@@ -108,8 +134,8 @@ async def roll(ctx, roll : str):
             await ctx.send("I cant roll that many dice.")
             return
 
-        rolls, limit = map(int, roll.split('d'))
-        for value in range(rolls):
+        num_rolls, limit = map(int, roll.split('d'))
+        for value in range(num_rolls):
 
             number = random.randint(1, limit)
             total = total + number
@@ -130,6 +156,49 @@ async def roll(ctx, roll : str):
         return
 
 @bot.command()
+async def rollmedian(ctx, roll : str):
+
+    total = 0
+    rolls_str = ""
+    rolls = []
+
+    try:
+        try:
+            count, sides = roll_split(roll)
+
+
+        except Exception as e:
+            print(e)
+            await ctx.send("Format has to be in #d#.")
+            return
+
+        if int(count) > 1000:
+            await ctx.send("I cant roll that many dice.")
+            return
+
+        num_rolls = int(count)
+        limit = int(sides)
+        for value in range(num_rolls):
+
+            number = random.randint(1, limit)
+            rolls.append(number)
+
+            if rolls_str == '':
+                rolls_str += str(number)
+            else:
+                rolls_str += ', ' + str(number)
+
+        if count == '1' or count == '':
+            await ctx.send(ctx.message.author.mention + ": " + "Rolling {0}d{1}".format(count, sides) + "\n**Result**: {0} ".format(rolls_str))
+        else:
+            await ctx.send(ctx.message.author.mention + ": " + "Rolling {0}d{1}".format(count, sides) + "\n**Result**: **{0}** ".format(str(statistics.median(rolls))) + "({0})".format(rolls_str))
+
+
+    except Exception as e:
+        print(e)
+        return
+
+@bot.command()
 async def rollset(ctx, roll : str):
 
     total = 0
@@ -139,12 +208,7 @@ async def rollset(ctx, roll : str):
 
     try:
         try:
-            parse = roll.split('x')
-            sets = parse[0]
-            counts_sides = parse[1]
-            print("parse is {0}, parse[0] is {1}".format(parse, parse[0]))
-            count = counts_sides.split('d')[0]
-            sides = counts_sides.split('d')[1]
+            sets, count, sides = roll_split(roll, splits = 3)
 
 
         except Exception as e:
@@ -156,16 +220,16 @@ async def rollset(ctx, roll : str):
             await ctx.send("I cant roll that many dice.")
             return
 
-        rolls, limit = map(int, parse[1].split('d'))
+        #rolls, limit = map(int, parse[1].split('d'))
+        num_rolls = int(count)
+        limit = int(sides)
 
-        print("sets is {0}".format(sets))
         iterations = int(sets)
-        print("iterations is {0}".format(iterations))
         for iteration in range(iterations):
 
             total = 0
             rolls_str = ''
-            for value in range(rolls):
+            for value in range(num_rolls):
                 number = random.randint(1, limit)
                 total = total + number
 
@@ -191,6 +255,42 @@ async def rollset(ctx, roll : str):
         print(e)
         return
 
+@bot.command()
+async def hist(ctx, roll : str):
+
+    iteration_medians = []
+    iteration_totals = []
+    iterations = 10000
+
+    count, sides = roll_split(roll)
+
+
+    if int(count) > 1000:
+        await ctx.send("I cant roll that many dice.")
+        return
+
+    num_rolls = int(count)
+    num_sides = int(sides) 
+    for iteration in range(iterations):
+        rolls = []
+        for result in range(num_rolls):
+            number = random.randint(1, num_sides)
+            rolls.append(number)
+        iteration_totals.append(sum(rolls))
+        iteration_medians.append(statistics.median(rolls))
+    
+    plt.title("Histogram for {0}d{1} Take Median ({2} Iterations)".format(num_rolls, num_sides, iterations))
+    plt.hist(iteration_medians, bins=20, density=True)
+    plt.savefig("test.png")
+
+    #embed = discord.Embed(title="Histogram for {0}d{1} (Totals, Medians)".format(num_rolls, num_sides), description="")
+    #embed.set_image(url="test.png")
+    with open("test.png", 'rb') as plotfile:
+        image = discord.File(plotfile)
+
+    await ctx.send("content", file=image)
+    os.remove("test.png")
+    plt.clf()
 
 @bot.command()
 async def info(ctx):
@@ -210,8 +310,8 @@ bot.remove_command('help')
 async def help(ctx):
     embed = discord.Embed(title=bot_config['bot_name'], description=bot_config['bot_owner_username'], color=0xeee657)
 
-    embed.add_field(name="!add X Y", value="Gives the addition of **X** and **Y**", inline=False)
-    embed.add_field(name="!multiply X Y", value="Gives the multiplication of **X** and **Y**", inline=False)
+    embed.add_field(name="!roll XdY", value="Outputs the result of rolling 3d6", inline=False)
+    embed.add_field(name="!rollset AxBdC", value="Rolls BdC A times and outputs each total separately", inline=False)
     embed.add_field(name="!info", value="Gives a little info about the bot", inline=False)
     embed.add_field(name="!help", value="Gives this message", inline=False)
 
