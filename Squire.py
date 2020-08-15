@@ -198,6 +198,96 @@ async def rollmedian(ctx, roll : str):
         print(e)
         return
 
+
+@bot.command()
+async def rolladv(ctx, roll : str):
+    total = 0
+      rolls_str = ""
+      rolls = []
+
+      try:
+          try:
+              count, sides = roll_split(roll)
+
+
+          except Exception as e:
+              print(e)
+              await ctx.send("Format has to be in #d#.")
+              return
+
+          if int(count) > 1000:
+              await ctx.send("I cant roll that many dice.")
+              return
+
+          num_rolls = int(count)
+          limit = int(sides)
+          for value in range(num_rolls):
+
+              number = random.randint(1, limit)
+              rolls.append(number)
+
+              if rolls_str == '':
+                  rolls_str += str(number)
+              else:
+                  rolls_str += ', ' + str(number)
+
+          if count == '1' or count == '':
+              await ctx.send(ctx.message.author.mention + ": " + "Rolling {0}d{1}".format(count, sides) + "\n**Result**: {0} ".format(rolls_str))
+          else:
+              await ctx.send(ctx.message.author.mention + ": " +
+                      "Rolling {0}d{1}".format(count, sides) +
+                      "\n**Result**: **{0}**$".format(str(max(rolls))) + "({0})".format(rolls_str))
+
+
+      except Exception as e:
+          print(e)
+          return
+
+@bot.command()
+async def rolldis(ctx, roll : str):
+    total = 0
+      rolls_str = ""
+      rolls = []
+
+      try:
+          try:
+              count, sides = roll_split(roll)
+
+
+          except Exception as e:
+              print(e)
+              await ctx.send("Format has to be in #d#.")
+              return
+
+          if int(count) > 1000:
+              await ctx.send("I cant roll that many dice.")
+              return
+
+          num_rolls = int(count)
+          limit = int(sides)
+          for value in range(num_rolls):
+
+              number = random.randint(1, limit)
+              rolls.append(number)
+
+              if rolls_str == '':
+                  rolls_str += str(number)
+              else:
+                  rolls_str += ', ' + str(number)
+
+          if count == '1' or count == '':
+              await ctx.send(ctx.message.author.mention + ": " + "Rolling {0}d{1}".format(count, sides) + "\n**Result**: {0} ".format(rolls_str))
+          else:
+              await ctx.send(ctx.message.author.mention + ": " +
+                      "Rolling {0}d{1}".format(count, sides) +
+                      "\n**Result**: **{0}**$".format(str(min(rolls))) + "({0})".format(rolls_str))
+
+
+      except Exception as e:
+          print(e)
+          return
+
+
 @bot.command()
 async def rollset(ctx, roll : str):
 
