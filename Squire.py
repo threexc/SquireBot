@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 from discord.ext import commands
 
-bot = commands.Bot(command_prefix='!')
+bot = commands.Bot(command_prefix='&')
 
 bot_config_file = "squire_config.json"
 bot_config = {}
@@ -201,7 +201,7 @@ async def rollmedian(ctx, roll : str):
 
 @bot.command()
 async def rolladv(ctx, roll : str):
-    total = 0
+      total = 0
       rolls_str = ""
       rolls = []
 
@@ -236,7 +236,7 @@ async def rolladv(ctx, roll : str):
           else:
               await ctx.send(ctx.message.author.mention + ": " +
                       "Rolling {0}d{1}".format(count, sides) +
-                      "\n**Result**: **{0}**$".format(str(max(rolls))) + "({0})".format(rolls_str))
+                      "\n**Result**: **{0}** ".format(str(max(rolls))) + "({0})".format(rolls_str))
 
 
       except Exception as e:
@@ -246,46 +246,67 @@ async def rolladv(ctx, roll : str):
 @bot.command()
 async def rolldis(ctx, roll : str):
     total = 0
-      rolls_str = ""
-      rolls = []
+    rolls_str = ""
+    rolls = []
 
+    try:
       try:
-          try:
-              count, sides = roll_split(roll)
-
-
-          except Exception as e:
-              print(e)
-              await ctx.send("Format has to be in #d#.")
-              return
-
-          if int(count) > 1000:
-              await ctx.send("I cant roll that many dice.")
-              return
-
-          num_rolls = int(count)
-          limit = int(sides)
-          for value in range(num_rolls):
-
-              number = random.randint(1, limit)
-              rolls.append(number)
-
-              if rolls_str == '':
-                  rolls_str += str(number)
-              else:
-                  rolls_str += ', ' + str(number)
-
-          if count == '1' or count == '':
-              await ctx.send(ctx.message.author.mention + ": " + "Rolling {0}d{1}".format(count, sides) + "\n**Result**: {0} ".format(rolls_str))
-          else:
-              await ctx.send(ctx.message.author.mention + ": " +
-                      "Rolling {0}d{1}".format(count, sides) +
-                      "\n**Result**: **{0}**$".format(str(min(rolls))) + "({0})".format(rolls_str))
+          count, sides = roll_split(roll)
 
 
       except Exception as e:
           print(e)
+          await ctx.send("Format has to be in #d#.")
           return
+
+      if int(count) > 1000:
+          await ctx.send("I cant roll that many dice.")
+          return
+
+      num_rolls = int(count)
+      limit = int(sides)
+      for value in range(num_rolls):
+
+          number = random.randint(1, limit)
+          rolls.append(number)
+
+          if rolls_str == '':
+              rolls_str += str(number)
+          else:
+              rolls_str += ', ' + str(number)
+
+      if count == '1' or count == '':
+          await ctx.send(ctx.message.author.mention + ": " + "Rolling {0}d{1}".format(count, sides) + "\n**Result**: {0} ".format(rolls_str))
+      else:
+          await ctx.send(ctx.message.author.mention + ": " +
+                  "Rolling {0}d{1}".format(count, sides) +
+                  "\n**Result**: **{0}** ".format(str(min(rolls))) + "({0})".format(rolls_str))
+
+
+    except Exception as e:
+      print(e)
+      return
+
+
+@bot.command()
+async def n20(ctx):
+    total = 0
+
+    rolls_str = ""
+    for value in range(4):
+        print(total)
+
+        number = random.randint(1, 6)
+        total = total + number
+
+        if rolls_str == '':
+          rolls_str += str(number)
+        else:
+          rolls_str += ', ' + str(number)
+
+    total = total - 4
+
+    await ctx.send(ctx.message.author.mention + ": " + "Rolling n20 (4d6-4)" + "\n**Result**: **{0}** ({1})".format(total, rolls_str))
 
 
 @bot.command()
@@ -400,10 +421,11 @@ bot.remove_command('help')
 async def help(ctx):
     embed = discord.Embed(title=bot_config['bot_name'], description=bot_config['bot_owner_username'], color=0xeee657)
 
-    embed.add_field(name="!roll XdY", value="Outputs the result of rolling 3d6", inline=False)
-    embed.add_field(name="!rollset AxBdC", value="Rolls BdC A times and outputs each total separately", inline=False)
-    embed.add_field(name="!info", value="Gives a little info about the bot", inline=False)
-    embed.add_field(name="!help", value="Gives this message", inline=False)
+    embed.add_field(name="&rollsum XdY", value="Outputs the result of rolling 3d6", inline=False)
+    embed.add_field(name="&n20", value="Output 4d6-4", inline=False)
+    embed.add_field(name="&rollset AxBdC", value="Rolls BdC A times and outputs each total separately", inline=False)
+    embed.add_field(name="&info", value="Gives a little info about the bot", inline=False)
+    embed.add_field(name="&help", value="Gives this message", inline=False)
 
     await ctx.send(embed=embed)
 
