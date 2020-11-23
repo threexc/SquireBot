@@ -47,46 +47,6 @@ async def add(ctx, a: int, b: int):
 async def multiply(ctx, a: int, b: int):
     await ctx.send(a*b)
 
-@bot.command()
-async def asura(ctx):
-    await ctx.send("asura sucks")
-
-@bot.command()
-async def haveneast(ctx):
-    await ctx.send("Suvy velik Gilbanya!")
-
-@bot.command()
-async def fractalgalaxy(ctx):
-    await ctx.send("Our five-year mission: To boldly go where- *gurgles*... *thud*... ***unnatural hiss***")
-
-@bot.command()
-async def steerpike(ctx):
-    await ctx.send("Was I mistaken, or did I catch you looking at me... with all three hundred eyes?")
-
-@bot.command()
-async def sparkletwist(ctx):
-    await ctx.send("Is it fate, or is it Fate?")
-
-@bot.command()
-async def loa(ctx):
-    await ctx.send("Mecha and steampunk and talking animals, oh my!")
-
-@bot.command()
-async def football(ctx):
-    await ctx.send("If you wanna win the game, you gotta score points Jim")
-
-@bot.command()
-async def superbright(ctx):
-    await ctx.send("ALL-CAPS MENACING GIBBERISH")
-
-@bot.command()
-async def hoers(ctx):
-    if ctx.message.author.nick == "Hoers":
-        await ctx.send("You're a hoers")
-    else:
-        await ctx.send("You're not a hoers")
-        print (ctx.message.author.nick)
-
 def roll_split(roll_string, splits=2):
     if splits == 3:
         parse = roll_string.split('x')
@@ -103,16 +63,6 @@ def roll_split(roll_string, splits=2):
         sides = roll_string.split('d')[1]
         return (count, sides)
         
-
-
-
-async def basic_roll(ctx, roll : str):
-
-    total = 0
-    rolls_str = ""
-    rolls = []
-
-
 @bot.command()
 async def rollsum(ctx, roll : str):
 
@@ -198,6 +148,36 @@ async def rollmedian(ctx, roll : str):
         print(e)
         return
 
+
+@bot.command()
+async def bol(ctx):
+
+    total = 0
+    rolls_str = ""
+
+    try:
+        count = 2
+        sides = 6
+
+        for value in range(count):
+
+            number = random.randint(1, 6)
+            total = total + number
+
+            if rolls_str == '':
+                rolls_str += str(number)
+            else:
+                rolls_str += ', ' + str(number)
+
+        if count == '1' or count == '':
+            await ctx.send(ctx.message.author.mention + ": " + "Rolling {0}d{1}".format(count, sides) + "\n**Result**: {0} ".format(rolls_str))
+        else:
+            await ctx.send(ctx.message.author.mention + ": " + "Rolling {0}d{1}".format(count, sides) + "\n**Result**: **{0}** ".format(str(total)) + "({0})".format(rolls_str))
+
+
+    except Exception as e:
+        print(e)
+        return
 
 @bot.command()
 async def rolladv(ctx, roll : str):
